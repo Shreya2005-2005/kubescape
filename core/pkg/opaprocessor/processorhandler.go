@@ -377,6 +377,8 @@ func (opap *OPAProcessor) runOPAOnSingleRule(ctx context.Context, rule *reportha
 	switch rule.RuleLanguage {
 	case reporthandling.RegoLanguage, reporthandling.RegoLanguage2:
 		return opap.runRegoOnK8s(ctx, rule, k8sObjects, getRuleData, ruleRegoDependenciesData)
+	case reporthandling.CELLanguage:
+		return opap.runCELOnK8s(ctx, rule, k8sObjects)
 	default:
 		return nil, fmt.Errorf("rule: '%s', language '%v' not supported", rule.Name, rule.RuleLanguage)
 	}
