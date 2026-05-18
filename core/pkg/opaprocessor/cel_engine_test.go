@@ -37,9 +37,9 @@ func TestRunCELOnK8s_PrivilegedDenied(t *testing.T) {
 	writeTempVAP(t, "test-deny-privileged", privilegedVAP)
 	opap := &OPAProcessor{}
 	rule := &reporthandling.PolicyRule{
-		Name:         "test-deny-privileged",
 		RuleLanguage: reporthandling.CELLanguage,
 	}
+	rule.Name = "test-deny-privileged"
 	pod := map[string]interface{}{
 		"metadata": map[string]interface{}{"name": "bad-pod"},
 		"spec": map[string]interface{}{
@@ -64,9 +64,9 @@ func TestRunCELOnK8s_AllowedPod(t *testing.T) {
 	writeTempVAP(t, "test-deny-privileged", privilegedVAP)
 	opap := &OPAProcessor{}
 	rule := &reporthandling.PolicyRule{
-		Name:         "test-deny-privileged",
 		RuleLanguage: reporthandling.CELLanguage,
 	}
+	rule.Name = "test-deny-privileged"
 	pod := map[string]interface{}{
 		"metadata": map[string]interface{}{"name": "good-pod"},
 		"spec": map[string]interface{}{
@@ -91,9 +91,9 @@ func TestRunCELOnK8s_MissingVAP(t *testing.T) {
 
 	opap := &OPAProcessor{}
 	rule := &reporthandling.PolicyRule{
-		Name:         "nonexistent-control",
 		RuleLanguage: reporthandling.CELLanguage,
 	}
+	rule.Name = "nonexistent-control"
 	_, err := opap.runCELOnK8s(context.Background(), rule, []map[string]interface{}{})
 	assert.Error(t, err)
 	assert.Contains(t, err.Error(), "CEL: failed to read VAP")
