@@ -11,6 +11,25 @@ import (
 
 var ErrUnknownSeverity = fmt.Errorf("unknown severity. Supported severities are: %s", strings.Join(reporthandlingapis.GetSupportedSeverities(), ", "))
 
+// ErrBadThreshold is returned when a numeric threshold is outside the valid range [0, 100].
+var ErrBadThreshold = fmt.Errorf("bad argument: out of range threshold")
+
+// ValidateThresholds validates that FailThreshold, ComplianceThreshold and
+// FailCoverageThreshold are all within [0, 100]. This mirrors the check in
+// validateFrameworkScanInfo and validateControlScanInfo.
+func ValidateThresholds(scanInfo *cautils.ScanInfo) error {
+	if 100 < scanInfo.FailThreshold || 0 > scanInfo.FailThreshold {
+		return ErrBadThreshold
+	}
+	if 100 < scanInfo.ComplianceThreshold || 0 > scanInfo.ComplianceThreshold {
+		return ErrBadThreshold
+	}
+	if 100 < scanInfo.FailCoverageThreshold || 0 > scanInfo.FailCoverageThreshold {
+		return ErrBadThreshold
+	}
+	return nil
+}
+
 // ValidateSeverity returns an error if a given severity is not known, nil otherwise
 func ValidateSeverity(severity string) error {
 	for _, val := range reporthandlingapis.GetSupportedSeverities() {
