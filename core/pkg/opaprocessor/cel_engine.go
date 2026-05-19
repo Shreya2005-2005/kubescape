@@ -16,13 +16,43 @@ import (
 // alongside the existing Rego engine. For object-scoped rules, kubescape scan
 // and the cluster admission controller produce identical results.
 // Known gap: authorizer and request.userInfo are not available offline.
+
+
+// loadCELParams loads params from basic-control-configuration.yaml in the VAP bundle.
+// Falls back to empty map if file not found (params-less controls).
+func loadCELParams(ruleName string) map[string]interface{} {
+	base := os.Getenv("CEL_ADMISSION_LIBRARY_PATH")
+	if base == "" {
+		base = "cel-admission-library"
+	}
+	paramsPath := fmt.Sprintf("%s/controls/%s/basic-control-configuration.yaml", base, ruleName)
+	data, err := os.ReadFile(paramsPath)
+	if err != nil {
+		return map[string]interface{}{}
+	}
+	var params map[string]interface{}
+	if err := yaml.Unmarshal(data, &params); err != nil {
+		return map[string]interface{}{}
+	}
+	return params
+}
+
+// celVAPPath returns path to VAP YAML. Override with CEL_ADMISSION_LIBRARY_PATH env var.
+func celVAPPath(ruleName string) string {
+	base := os.Getenv("CEL_ADMISSION_LIBRARY_PATH")
+	if base == "" {
+		base = "cel-admission-library"
+	}
+	return fmt.Sprintf("%s/controls/%s/policy.yaml", base, ruleName)
+}
+
 func (opap *OPAProcessor) runCELOnK8s(
 	ctx context.Context,
 	rule *reporthandling.PolicyRule,
 	k8sObjects []map[string]interface{},
 ) ([]reporthandling.RuleResponse, error) {
 
-	vapPath := fmt.Sprintf("cel-admission-library/controls/%s/policy.yaml", rule.Name)
+	vapPath := celVAPPath(rule.Name)
 	vapBytes, err := os.ReadFile(vapPath)
 	if err != nil {
 		return nil, fmt.Errorf("CEL: failed to read VAP for rule %s: %w", rule.Name, err)
